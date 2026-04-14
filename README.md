@@ -157,5 +157,3 @@ http://127.0.0.1:5000
 ```
 
 ---
-
-This README now presents NexHire AI in a professional, well-organized manner with clear visual hierarchy, improved formatting, and better information structure! 🎯
