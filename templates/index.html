@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GVCStream AI | Talent Intelligence</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #2563eb; --text: #f8fafc; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+        
+        /* Layout Panels */
+        .panel { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid #334155; }
+        
+        /* Candidate Cards */
+        .candidate-card { 
+            background: #1e293b; border: 1px solid #334155; border-radius: 15px; 
+            padding: 18px 22px; margin-bottom: 12px; cursor: pointer; transition: 0.3s;
+        }
+        .candidate-card:hover { border-color: var(--accent); transform: translateX(8px); background: #232f45; }
+        
+        /* Fit Status Badges */
+        .fit-status { font-size: 0.7rem; font-weight: 800; padding: 4px 12px; border-radius: 6px; text-transform: uppercase; }
+        .Excellent.Fit { background: #064e3b; color: #34d399; }
+        .Moderate.Fit { background: #78350f; color: #fbbf24; }
+        .Weak.Fit { background: #7f1d1d; color: #f87171; }
+        .Poor.Fit { background: #334155; color: #94a3b8; }
+
+        /* MODAL TEXT FIX (Ensures dark readable text) */
+        .modal-content { background: #ffffff !important; color: #1e293b !important; border-radius: 25px; border: none; }
+        #rep-name { color: #0f172a !important; font-weight: 800; }
+        .stat-lab-modal { color: #64748b !important; font-size: 0.7rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        
+        /* Skills & Gaps Tags */
+        .skill-tag { background: #f1f5f9; color: #2563eb; padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; margin: 4px; display: inline-block; }
+        .gap-tag { background: #fee2e2; color: #ef4444; }
+        
+        /* Inputs */
+        .custom-area { background: #0f172a !important; color: white !important; border: 1px solid #334155 !important; }
+        .custom-area:focus { border-color: var(--accent) !important; box-shadow: none !important; }
+        
+        /* Download Section */
+        .download-section { border-top: 1px solid #334155; margin-top: 25px; padding-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <!-- Header Area -->
+    <div class="row mb-5 align-items-center">
+        <div class="col-md-8">
+            <h1 class="fw-bold m-0"><i class="fa-solid fa-brain me-2 text-primary"></i>NexHire <span style="color:#6366f1">AI</span></h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <!-- REQUESTED BADGE POSITIONING -->
+            <div class="mb-1"><span class="badge bg-primary px-3">Llama 3.1 + MPNet + BM25</span></div>
+            <div><span class="badge bg-info text-dark px-3">Hybrid ML (99% Acc) + Llama 3.1</span></div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Sidebar Form -->
+        <div class="col-md-4">
+            <div class="panel shadow-lg">
+                <form action="/" method="post" enctype="multipart/form-data">
+                    <label class="stat-lab-modal d-block mb-2 text-white opacity-75">Job Description</label>
+                    <textarea name="jd" class="form-control custom-area mb-4" rows="8" placeholder="Paste requirements..." required>{{ jd }}</textarea>
+                    
+                    <label class="stat-lab-modal d-block mb-2 text-white opacity-75">Target Seniority</label>
+                    <select name="level" class="form-select custom-area mb-4">
+                        <option value="internship" {% if level == 'internship' %}selected{% endif %}>Internship</option>
+                        <option value="entry" {% if level == 'entry' %}selected{% endif %}>Entry Level</option>
+                        <option value="experienced" {% if level == 'experienced' %}selected{% endif %}>Experienced</option>
+                    </select>
+
+                    <label class="stat-lab-modal d-block mb-2 text-white opacity-75">Upload Resumes</label>
+                    <input type="file" name="resumes" class="form-control custom-area mb-4" multiple required>
+                    
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-3 mb-3">RANK CANDIDATES</button>
+                </form>
+
+                <!-- DOWNLOAD TOP TALENT SECTION -->
+                {% if results %}
+                <div class="download-section">
+                    <label class="stat-lab-modal d-block mb-2 text-warning">Export Shortlist</label>
+                    <form action="/download_top" method="post">
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark text-white border-secondary">Top</span>
+                            <input type="number" name="top_n" class="form-control custom-area" value="3" min="1" max="{{ results|length }}">
+                            <button class="btn btn-outline-warning fw-bold" type="submit">ZIP DOWNLOAD</button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="col-md-8">
+            <div class="results-container">
+                {% for res in results %}
+                <div class="candidate-card d-flex align-items-center justify-content-between shadow-sm" onclick="openExpertReport('{{ res.filename }}')">
+                    <div>
+                        <h5 class="fw-bold mb-1" style="font-size: 1.1rem;">{{ res.filename }}</h5>
+                        <div class="small text-light mb-2">
+                            <i class="fa-solid fa-user-tie me-1"></i> {{ res.predicted_role }}
+                        </div>
+                        <span class="fit-status {{ res.category.replace(' ', '.') }}">{{ res.category }}</span>
+                    </div>
+                    <div class="text-end">
+                        <h2 class="fw-bold mb-0" style="font-size: 2rem; color: #6366f1;">{{ (res.score * 100) | round(1) }}%</h2>
+                        <small class="text-muted">Hybrid AI Score</small>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if not results %}
+                <div class="panel text-center py-5 opacity-50 border-dashed">
+                    <i class="fa-solid fa-cloud-arrow-up fa-4x mb-3 text-primary"></i>
+                    <h4 class="fw-bold">No Resumes Analyzed</h4>
+                    <p>Upload candidate PDFs on the left to trigger the scoring engine.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ANALYSIS MODAL -->
+<div class="modal fade" id="expertModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content p-4 shadow-2xl">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <label class="stat-lab-modal text-primary d-block">Talent Intelligence Report</label>
+                    <h1 id="rep-name" class="display-6 fw-bold">Candidate Name</h1>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 border-end">
+                    <label class="stat-lab-modal d-block mb-1">NexusRole Prediction</label>
+                    <h3 id="rep-match" class="fw-bold text-primary mb-3">...</h3>
+                    
+                    <label class="stat-lab-modal d-block mb-1">Technical Reasoning</label>
+                    <p id="rep-reasoning" class="text-secondary small" style="line-height: 1.6;"></p>
+                </div>
+                <div class="col-md-6">
+                    <label class="stat-lab-modal d-block mb-1">Verified Matching Skills</label>
+                    <div id="rep-skills" class="mb-4"></div>
+                    
+                    <label class="stat-lab-modal d-block mb-1">Critical Skill Gaps</label>
+                    <div id="rep-gaps"></div>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-light rounded-4">
+                <label class="stat-lab-modal d-block mb-2 text-dark">Strategic Advice</label>
+                <div id="rep-rec" class="small fw-bold text-primary"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function openExpertReport(filename) {
+        const jd = document.querySelector('textarea[name="jd"]').value;
+        
+        // Clear Modal and show Loading
+        document.getElementById('rep-name').innerText = "AI is scanning " + filename + "...";
+        document.getElementById('rep-match').innerText = "Predicting...";
+        document.getElementById('rep-reasoning').innerText = "";
+        document.getElementById('rep-skills').innerHTML = "";
+        document.getElementById('rep-gaps').innerHTML = "";
+        document.getElementById('rep-rec').innerText = "";
+
+        fetch(`/get_report?filename=${encodeURIComponent(filename)}&jd=${encodeURIComponent(jd)}`)
+            .then(res => res.json())
+            .then(data => {
+                // Populate Modal with data from engine.py
+                document.getElementById('rep-name').innerText = data.candidate_name || filename;
+                document.getElementById('rep-match').innerText = data.best_match;
+                document.getElementById('rep-reasoning').innerText = data.reasoning;
+                
+                // Build Tags
+                document.getElementById('rep-skills').innerHTML = (data.matched_skills || []).map(s => 
+                    `<span class="skill-tag">${s}</span>`
+                ).join('');
+                
+                document.getElementById('rep-gaps').innerHTML = (data.skill_gaps || []).map(g => 
+                    `<span class="skill-tag gap-tag">${g}</span>`
+                ).join('');
+
+                // Update Recommendation
+                document.getElementById('rep-rec').innerText = data.recommended || "No specific advice available.";
+
+                const expertModal = new bootstrap.Modal(document.getElementById('expertModal'));
+                expertModal.show();
+            })
+            .catch(err => {
+                console.error(err);
+                alert("AI analysis failed. Ensure your server is running and API key is valid.");
+            });
+    }
+</script>
+</body>
+</html>
