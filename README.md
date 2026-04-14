@@ -13,7 +13,7 @@ NexHire AI is a next-generation recruitment intelligence system designed to move
 - **Generative AI** (Llama 3.1)
 
 ### 👉 Result:
-- ✅ 99.48% accurate role classification
+- ✅ 97.50% accurate role classification
 - ✅ Human-like reasoning & skill-gap analysis
 
 ---
