@@ -48,7 +48,7 @@ NexHire AI is a next-generation recruitment intelligence system designed to move
 ### 3️⃣ Classification Layer (Local ML)
 - **Model:** LinearSVC (SVM) + TF-IDF
 - **Dataset:** 14,000+ resumes
-- **Accuracy:** 99.48% F1 Score
+- **Accuracy:** 97.50% F1 Score
 - **Key Advantage:** ⚡ Zero API latency (runs locally) | ⚡ Instant role prediction
 
 ### 4️⃣ Reasoning Layer (Explainable AI)
@@ -109,7 +109,7 @@ NexHire AI is a next-generation recruitment intelligence system designed to move
 | Java Developer | 1.00 | 1.00 | 1.00 |
 | Testing | 0.94 | 1.00 | 0.97 |
 | Network Security | 1.00 | 1.00 | 1.00 |
-| **Weighted Avg** | **99.48%** | **99.00%** | **99.20%** |
+| **Weighted Avg** | **97.50%** | **97.00%** | **97.20%** |
 
 ---
 
